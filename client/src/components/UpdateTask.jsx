@@ -12,10 +12,16 @@ export default function UpdateTask() {
     const { id } = useParams(); // Extract task ID from URL params
 
     // Fetch existing task data when component mounts
+   // Fetch existing task data when component mounts
     useEffect(() => {
         const fetchTaskDetails = async () => {
+            // PROFESSIONAL DEBUGGER FIX: Dynamic fallback resolution matrix
+            const BACKEND_BASE_URL = window.location.hostname === 'localhost' 
+              ? (import.meta.env.VITE_API_URL || 'http://localhost:3200')
+              : 'https://task-manager-wjgy.onrender.com';
+
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/task/${id}`, {
+                const response = await fetch(`${BACKEND_BASE_URL}/task/${id}`, {
                     credentials: 'include'
                 });
                 const result = await response.json();
@@ -41,6 +47,7 @@ export default function UpdateTask() {
     }, [id]);
 
     // Update task submit handler
+    // Update task submit handler
     const handleUpdateTaskSubmit = async () => {
         if (!taskData.title?.trim()) {
             setError('Task title cannot be empty.');
@@ -49,8 +56,13 @@ export default function UpdateTask() {
         setError('');
         setSubmitting(true);
 
+        // PROFESSIONAL DEBUGGER FIX: Dynamic fallback resolution matrix
+        const BACKEND_BASE_URL = window.location.hostname === 'localhost' 
+          ? (import.meta.env.VITE_API_URL || 'http://localhost:3200')
+          : 'https://task-manager-wjgy.onrender.com';
+
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/update-task/${id}`, {
+            const response = await fetch(`${BACKEND_BASE_URL}/update-task/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify({ _id: id, ...taskData }),
                 credentials: 'include',

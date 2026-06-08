@@ -24,8 +24,13 @@ export default function Login() {
         setError('');
         setLoading(true);
 
+        // PROFESSIONAL DEBUGGER FIX: Dynamic fallback resolution matrix
+        const BACKEND_BASE_URL = window.location.hostname === 'localhost' 
+          ? (import.meta.env.VITE_API_URL || 'http://localhost:3200')
+          : 'https://task-manager-wjgy.onrender.com';
+
         try {
-           const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
+           const response = await fetch(`${BACKEND_BASE_URL}/login`, {
                 method: 'POST',
                 body: JSON.stringify(userData),
                 // Required for cross-origin cookie handling (httpOnly session token)

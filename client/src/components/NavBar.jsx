@@ -7,10 +7,16 @@ function NavBar() {
     const navigate = useNavigate() //
 
     // BUG 6 FIX: Clear session securely both on the backend (httpOnly cookie) and client side
+   // BUG 6 FIX: Clear session securely both on the backend (httpOnly cookie) and client side
     const logout = async () => {
+        // PROFESSIONAL DEBUGGER FIX: Dynamic fallback resolution matrix
+        const BACKEND_BASE_URL = window.location.hostname === 'localhost' 
+          ? (import.meta.env.VITE_API_URL || 'http://localhost:3200')
+          : 'https://task-manager-wjgy.onrender.com';
+
         try {
             // Backend endpoint par hit karke server-side token cookie ko destroy karein
-            await fetch(`${import.meta.env.VITE_API_URL}/logout`, {
+            await fetch(`${BACKEND_BASE_URL}/logout`, {
                 method: 'POST',
                 credentials: 'include' // Cross-origin cookies transfer karne ke liye mandatory hai
             });

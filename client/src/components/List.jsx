@@ -13,8 +13,13 @@ export default function List() {
         let isMounted = true;
 
         const fetchTasks = async () => {
+            // PROFESSIONAL DEBUGGER FIX: Dynamic fallback resolution matrix
+            const BACKEND_BASE_URL = window.location.hostname === 'localhost' 
+              ? (import.meta.env.VITE_API_URL || 'http://localhost:3200')
+              : 'https://task-manager-wjgy.onrender.com';
+
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/tasks`, {
+                const response = await fetch(`${BACKEND_BASE_URL}/tasks`, {
                     credentials: "include",
                 });
                 const data = await response.json();
@@ -45,9 +50,14 @@ export default function List() {
     }, []);
 
     const toggleStatus = async (id, currentStatus) => {
+        // PROFESSIONAL DEBUGGER FIX: Dynamic fallback resolution matrix
+        const BACKEND_BASE_URL = window.location.hostname === 'localhost' 
+          ? (import.meta.env.VITE_API_URL || 'http://localhost:3200')
+          : 'https://task-manager-wjgy.onrender.com';
+
         try {
             const nextStatus = currentStatus === "completed" ? "active" : "completed";
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/update-task/${id}`, {
+            const response = await fetch(`${BACKEND_BASE_URL}/update-task/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ _id: id, status: nextStatus }),

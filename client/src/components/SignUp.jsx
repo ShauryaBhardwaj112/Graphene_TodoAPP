@@ -15,6 +15,7 @@ export default function SignUp() {
   }, [navigate]);
 
   // Account creation request transaction sequence execution processor framework data flow parameters map elements
+ // Account creation request transaction sequence execution processor framework data flow parameters map elements
   const handleSignUp = async () => {
     if (!userData.name?.trim() || !userData.email?.trim() || !userData.password?.trim()) {
       alert('Please fill all the fields.');
@@ -23,8 +24,13 @@ export default function SignUp() {
 
     setLoading(true); // BUG 10 FIX: Intercept network initialization track to block redundant clicks
 
+    // PROFESSIONAL DEBUGGER FIX: Dynamic fallback resolution matrix
+    const BACKEND_BASE_URL = window.location.hostname === 'localhost' 
+      ? (import.meta.env.VITE_API_URL || 'http://localhost:3200')
+      : 'https://task-manager-wjgy.onrender.com';
+
     try {
-      let response = await fetch(`${import.meta.env.VITE_API_URL}/signup`, {
+      let response = await fetch(`${BACKEND_BASE_URL}/signup`, {
         method: 'POST',
         body: JSON.stringify(userData),
         credentials: 'include',
