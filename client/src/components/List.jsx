@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 
 export default function List() {
     const [taskData, setTaskData] = useState([]);
-    const [filter, setFilter] = useState("all"); 
-    const [searchTerm, setSearchTerm] = useState(""); 
+    const [filter, setFilter] = useState("all");
+    const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -14,12 +14,11 @@ export default function List() {
 
         const fetchTasks = async () => {
             try {
-                // FIXED: Changed double quotes to backticks to properly parse environmental variables
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/tasks`, {
                     credentials: "include",
                 });
                 const data = await response.json();
-                
+
                 if (isMounted) {
                     if (data.success) {
                         setTaskData(data.result);
@@ -40,15 +39,17 @@ export default function List() {
 
         fetchTasks();
 
+        // Cleanup to prevent state updates on unmounted component
         return () => {
-            isMounted = false; // Cleanup logic to prevent memory leaks/race conditions
+            isMounted = false;
         };
     }, []);
 
+    // Toggle task between active and completed
     const toggleStatus = async (id, currentStatus) => {
         try {
             const nextStatus = currentStatus === "completed" ? "active" : "completed";
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/update-task`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/update-task/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ _id: id, status: nextStatus }),
@@ -59,10 +60,11 @@ export default function List() {
                 setTaskData(prev => prev.map(t => t._id === id ? { ...t, status: nextStatus } : t));
             }
         } catch {
-            alert("Status update failed");
+            alert("Status update failed. Please try again.");
         }
     };
 
+    // Delete a single task after confirmation
     const deleteTask = async (id) => {
         if (!window.confirm("Are you sure you want to delete this task?")) return;
         try {
@@ -75,39 +77,39 @@ export default function List() {
                 setTaskData(prev => prev.filter(t => t._id !== id));
             }
         } catch {
-            alert("Delete failed");
+            alert("Delete failed. Please try again.");
         }
     };
 
+    // Format ISO date string to readable format
     const formatDate = (dateString) => {
-        if (!dateString) return "No date";
+        if (!dateString) return "No date set";
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
         return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
-    // SEARCH + FILTER RUNTIME DYNAMICS
+    // Apply search and filter together
     const filteredTasks = taskData.filter(item => {
         if (filter === "active" && item.status !== "active") return false;
         if (filter === "completed" && item.status !== "completed") return false;
-        
         return item.title.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
-    // FIXED: Real-time calculation for active vs completed count dashboard badges
+    // Live count of active vs completed tasks
     const activeCount = taskData.filter(t => t.status === "active").length;
     const completedCount = taskData.filter(t => t.status === "completed").length;
 
     return (
         <div className="list-container">
             <div className="list-toolbar">
-                <h1>Your Dashboard Task Collection</h1>
+                <h1>Your Tasks</h1>
             </div>
 
-            {/* DESIGN TOKENS PAR MATCH SEARCH BAR */}
+            {/* Search bar */}
             <div style={{ marginBottom: '1.5rem' }}>
-                <input 
-                    type="text" 
-                    placeholder="🔍 Search tasks by title..." 
+                <input
+                    type="text"
+                    placeholder="🔍 Search tasks by title..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{
@@ -122,12 +124,12 @@ export default function List() {
                 />
             </div>
 
-            {/* FIXED: Task Counter Badges aligned precisely with design system tokens */}
+            {/* Task count summary */}
             <div style={{ marginBottom: '1.25rem', fontSize: '0.95rem', color: 'var(--clr-text-secondary)' }}>
-                📊 <strong>Active Tasks:</strong> {activeCount} | <strong>Completed Tasks:</strong> {completedCount}
+                📊 <strong>Active:</strong> {activeCount} &nbsp;|&nbsp; <strong>Completed:</strong> {completedCount}
             </div>
 
-            {/* Filter Tabs */}
+            {/* Filter tabs */}
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
                 <button onClick={() => setFilter("all")} style={{ padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'pointer', background: filter === 'all' ? '#3E2A1A' : '#fff', color: filter === 'all' ? '#fff' : '#000', border: '1px solid #ccc' }}>All</button>
                 <button onClick={() => setFilter("active")} style={{ padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'pointer', background: filter === 'active' ? '#3E2A1A' : '#fff', color: filter === 'active' ? '#fff' : '#000', border: '1px solid #ccc' }}>Active</button>
@@ -146,12 +148,12 @@ export default function List() {
                         {filteredTasks.map((item) => {
                             const isOverdue = item.dueDate && new Date(item.dueDate) < new Date() && item.status !== 'completed';
                             const rowBg = item.status === 'completed' ? '#fcfbf8' : 'var(--clr-surface)';
-                            
+
                             return (
                                 <Fragment key={item._id}>
-                                    <li style={{ 
-                                        display: 'flex', 
-                                        justifyContent: 'space-between', 
+                                    <li style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
                                         alignItems: 'center',
                                         padding: '1.25rem 1rem',
                                         borderBottom: '1px solid var(--clr-border)',
@@ -161,16 +163,18 @@ export default function List() {
                                         boxShadow: 'var(--shadow-card)'
                                     }}>
                                         <div>
-                                            <input 
-                                                type="checkbox" 
-                                                checked={item.status === "completed"} 
+                                            <input
+                                                type="checkbox"
+                                                checked={item.status === "completed"}
                                                 onChange={() => toggleStatus(item._id, item.status)}
                                                 style={{ marginRight: '1rem', transform: 'scale(1.2)', accentColor: '#3E2A1A' }}
                                             />
                                             <strong style={{ textDecoration: item.status === 'completed' ? 'line-through' : 'none', color: 'var(--clr-text-primary)', fontSize: '1.05rem' }}>
                                                 {item.title}
                                             </strong>
-                                            <p style={{ margin: '0.25rem 0 0 2.2rem', fontSize: '0.9rem', color: 'var(--clr-text-secondary)' }}>{item.description}</p>
+                                            <p style={{ margin: '0.25rem 0 0 2.2rem', fontSize: '0.9rem', color: 'var(--clr-text-secondary)' }}>
+                                                {item.description}
+                                            </p>
                                             <small style={{ marginLeft: '2.2rem', color: isOverdue ? 'var(--clr-danger)' : '#6b4226', fontWeight: isOverdue ? '600' : 'normal' }}>
                                                 Due: {formatDate(item.dueDate)} {isOverdue && "(OVERDUE)"}
                                             </small>

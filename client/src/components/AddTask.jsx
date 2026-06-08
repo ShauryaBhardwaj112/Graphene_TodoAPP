@@ -3,15 +3,15 @@ import '../style/addtask.css'
 import { useNavigate } from 'react-router-dom';
 
 export default function AddTask() {
-    // Form management state variables
+    // Form state variables
     const [taskData, setTaskData] = useState({ title: '', description: '', dueDate: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    // Form submit handler function
+    // Form submit handler
     const handleAddTask = async () => {
-        // Validation check: Title empty space filter
+        // Validation: filter out empty title
         if (!taskData.title?.trim()) {
             setError('Title is required.');
             return;
@@ -20,11 +20,11 @@ export default function AddTask() {
         setLoading(true);
 
         try {
-            const response = await fetch('${import.meta.env.VITE_API_URL}/add-task', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/add-task`, {
                 method: 'POST',
                 body: JSON.stringify(taskData),
-                // Backend with credentials handle karne ke liye cookie cross-origin bhej rahe hain
-                credentials: 'include',             
+                // Sending cookie cross-origin for backend credentials handling
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -79,7 +79,7 @@ export default function AddTask() {
                     type="date"
                     name="dueDate"
                     value={taskData.dueDate}
-                    // Calendar validation trick: Aaj ke pehle ki date select nahi honi chahiye
+                    // Prevent selecting dates before today
                     min={new Date().toISOString().split('T')[0]}
                     onChange={(e) => setTaskData({ ...taskData, dueDate: e.target.value })}
                 />

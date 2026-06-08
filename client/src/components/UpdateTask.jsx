@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 import '../style/addtask.css';
-import { useNavigate, useParams } from 'react-router-dom'; 
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function UpdateTask() {
     const [taskData, setTaskData] = useState({ title: '', description: '', dueDate: '' });
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(true); // Data fetch hone tak loading state active rahegi
+    const [loading, setLoading] = useState(true); // Active until existing task data is fetched
     const [submitting, setSubmitting] = useState(false);
-    
-    const navigate = useNavigate();
-    const { id } = useParams(); // URL params se Task ID extract ki
 
-    // Component load hote hi database se purana task data lane ke liye hook lifecycle execution
+    const navigate = useNavigate();
+    const { id } = useParams(); // Extract task ID from URL params
+
+    // Fetch existing task data when component mounts
     useEffect(() => {
         const fetchTaskDetails = async () => {
             try {
@@ -19,19 +19,19 @@ export default function UpdateTask() {
                     credentials: 'include'
                 });
                 const result = await response.json();
-                
+
                 if (result.success && result.result) {
                     setTaskData({
                         title: result.result.title || '',
                         description: result.result.description || '',
-                        // Date field string format handler logic tracking
+                        // Convert ISO date string to yyyy-mm-dd for the date input field
                         dueDate: result.result.dueDate ? result.result.dueDate.split('T')[0] : ''
                     });
                 } else {
-                    setError(result.message || "Failed to fetch task details.");
+                    setError(result.message || 'Failed to fetch task details.');
                 }
             } catch {
-                setError("Server connection failure. Unable to pull records.");
+                setError('Server connection failed. Unable to load task.');
             } finally {
                 setLoading(false);
             }
@@ -40,17 +40,17 @@ export default function UpdateTask() {
         fetchTaskDetails();
     }, [id]);
 
+    // Update task submit handler
     const handleUpdateTaskSubmit = async () => {
         if (!taskData.title?.trim()) {
-            setError('Title field validation: Task Title cannot be empty.');
+            setError('Task title cannot be empty.');
             return;
         }
         setError('');
         setSubmitting(true);
 
         try {
-            // Assessment rule requirement tracking check: PUT action invoked
-            const response = await fetch('${import.meta.env.VITE_API_URL}/update-task', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/update-task/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify({ _id: id, ...taskData }),
                 credentials: 'include',
@@ -62,12 +62,12 @@ export default function UpdateTask() {
             const result = await response.json();
 
             if (result.success) {
-                navigate('/'); // Form submission complete hone ke baad index route par send kiya
+                navigate('/'); // Redirect to task list after successful update
             } else {
-                setError(result.message || 'Something went wrong while modifying task metrics.');
+                setError(result.message || 'Something went wrong. Please try again.');
             }
         } catch {
-            setError('Network validation failure. Check your backend status log panels.');
+            setError('Cannot connect to server. Please check if the backend is running.');
         } finally {
             setSubmitting(false);
         }
@@ -77,7 +77,7 @@ export default function UpdateTask() {
         return (
             <div className="form-page">
                 <div className="container">
-                    <p>Loading task configuration pipelines...</p>
+                    <p>Loading task details...</p>
                 </div>
             </div>
         );
@@ -86,7 +86,7 @@ export default function UpdateTask() {
     return (
         <div className="form-page">
             <div className="container">
-                <h1>Edit Existing Task</h1>
+                <h1>Edit Task</h1>
 
                 {error && <p className="form-error" style={{ color: 'red', marginBottom: '1rem' }}>{error}</p>}
 
@@ -116,7 +116,7 @@ export default function UpdateTask() {
                     type="date"
                     name="dueDate"
                     value={taskData.dueDate}
-                    min={new Date().toISOString().split('T')[0]} // Past date blocking
+                    min={new Date().toISOString().split('T')[0]} // Block past dates
                     onChange={(e) => setTaskData({ ...taskData, dueDate: e.target.value })}
                 />
 
@@ -126,7 +126,7 @@ export default function UpdateTask() {
                     disabled={submitting}
                     style={{ opacity: submitting ? 0.7 : 1 }}
                 >
-                    {submitting ? 'Saving changes...' : 'Update Task Details'}
+                    {submitting ? 'Saving changes...' : 'Update Task'}
                 </button>
             </div>
         </div>

@@ -8,15 +8,14 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    // Authenticated state route intercept guard checker
+    // If user is already logged in, redirect to task list
     useEffect(() => {
-        // User agar pehle se logged in hai toh direct task manager list par phenko
         if (localStorage.getItem('login')) {
             navigate('/');
         }
     }, [navigate]);
 
-    // Authentication transaction triggers pipeline sequence action
+    // Login form submit handler
     const handleLogin = async () => {
         if (!userData.email?.trim() || !userData.password?.trim()) {
             setError('Please enter both email and password.');
@@ -29,8 +28,8 @@ export default function Login() {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
                 method: 'POST',
                 body: JSON.stringify(userData),
-                // Secure httpOnly session mapping configurations pass down logic setup rules
-                credentials: 'include',         
+                // Required for cross-origin cookie handling (httpOnly session token)
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -39,9 +38,8 @@ export default function Login() {
             const result = await response.json();
 
             if (result.success) {
-                // Note: Security parameters ke hisab se backend automatic Set-Cookie header se cookie set kar raha hai. 
-                // JavaScript context manual parsing block access nahi karega (httpOnly setup). 
-                // Hum bas application interface routing tracks handle karne ke liye item key pass down kar rahe hain local storage ko.
+                // The backend sets the httpOnly cookie automatically via Set-Cookie header.
+                // We only store the email in localStorage to track login state in the UI.
                 localStorage.setItem('login', userData.email);
                 window.dispatchEvent(new Event('localStorage-change'));
                 navigate('/');
@@ -62,7 +60,7 @@ export default function Login() {
 
                 {error && <p className="form-error">{error}</p>}
 
-                <label htmlFor="email">Email ID </label>
+                <label htmlFor="email">Email ID</label>
                 <input
                     id="email"
                     type="email"
