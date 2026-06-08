@@ -116,7 +116,7 @@ export default function UpdateTask() {
                     type="date"
                     name="dueDate"
                     value={taskData.dueDate}
-                    min={new Date().toISOString().split('T')[0]} // Block past dates
+                    // BUG 8 FIXED: Removed the hard 'min' validation constraint to enable smooth execution of historical edits
                     onChange={(e) => setTaskData({ ...taskData, dueDate: e.target.value })}
                 />
 

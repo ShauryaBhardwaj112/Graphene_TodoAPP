@@ -39,13 +39,11 @@ export default function List() {
 
         fetchTasks();
 
-        // Cleanup to prevent state updates on unmounted component
         return () => {
             isMounted = false;
         };
     }, []);
 
-    // Toggle task between active and completed
     const toggleStatus = async (id, currentStatus) => {
         try {
             const nextStatus = currentStatus === "completed" ? "active" : "completed";
@@ -64,7 +62,6 @@ export default function List() {
         }
     };
 
-    // Delete a single task after confirmation
     const deleteTask = async (id) => {
         if (!window.confirm("Are you sure you want to delete this task?")) return;
         try {
@@ -81,23 +78,24 @@ export default function List() {
         }
     };
 
-    // Format ISO date string to readable format
     const formatDate = (dateString) => {
         if (!dateString) return "No date set";
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
         return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
-    // Apply search and filter together
     const filteredTasks = taskData.filter(item => {
         if (filter === "active" && item.status !== "active") return false;
         if (filter === "completed" && item.status !== "completed") return false;
-        return item.title.toLowerCase().includes(searchTerm.toLowerCase());
+        return (item.title || '').toLowerCase().includes(searchTerm.toLowerCase());
     });
 
-    // Live count of active vs completed tasks
     const activeCount = taskData.filter(t => t.status === "active").length;
     const completedCount = taskData.filter(t => t.status === "completed").length;
+
+    // OPTIMIZATION: Define today's midnight point here ONCE before iteration to prevent memory garbage collection overhead
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
 
     return (
         <div className="list-container">
@@ -105,7 +103,6 @@ export default function List() {
                 <h1>Your Tasks</h1>
             </div>
 
-            {/* Search bar */}
             <div style={{ marginBottom: '1.5rem' }}>
                 <input
                     type="text"
@@ -124,12 +121,10 @@ export default function List() {
                 />
             </div>
 
-            {/* Task count summary */}
             <div style={{ marginBottom: '1.25rem', fontSize: '0.95rem', color: 'var(--clr-text-secondary)' }}>
                 📊 <strong>Active:</strong> {activeCount} &nbsp;|&nbsp; <strong>Completed:</strong> {completedCount}
             </div>
 
-            {/* Filter tabs */}
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
                 <button onClick={() => setFilter("all")} style={{ padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'pointer', background: filter === 'all' ? '#3E2A1A' : '#fff', color: filter === 'all' ? '#fff' : '#000', border: '1px solid #ccc' }}>All</button>
                 <button onClick={() => setFilter("active")} style={{ padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'pointer', background: filter === 'active' ? '#3E2A1A' : '#fff', color: filter === 'active' ? '#fff' : '#000', border: '1px solid #ccc' }}>Active</button>
@@ -146,7 +141,8 @@ export default function List() {
                 <div className="table-responsive">
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {filteredTasks.map((item) => {
-                            const isOverdue = item.dueDate && new Date(item.dueDate) < new Date() && item.status !== 'completed';
+                            // Clean check against pre-calculated start of day matrix
+                            const isOverdue = item.dueDate && new Date(item.dueDate) < todayStart && item.status !== 'completed';
                             const rowBg = item.status === 'completed' ? '#fcfbf8' : 'var(--clr-surface)';
 
                             return (

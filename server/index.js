@@ -1,13 +1,19 @@
-import "dotenv/config"; // Yeh line sabse upar honi chahiye
+import "dotenv/config"; // Must stay at the very top
 import e from "express";
 import { collectionName, connection } from "./dbconfig.js";
 import cors from "cors";
 import { ObjectId } from "mongodb";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
+import bcrypt from 'bcrypt';
 
 const app = e();
-const JWT_SECRET = process.env.JWT_SECRET || "Google";
+
+// BUG 3 FIX: Fail loudly at startup if JWT_SECRET is missing
+if (!process.env.JWT_SECRET) {
+    throw new Error("FATAL: JWT_SECRET environment variable is not set.");
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(e.json());
 app.use(cors({
@@ -26,7 +32,7 @@ function verifyJWTToken(req, resp, next) {
         if (error) {
             return resp.status(401).send({ success: false, msg: "Invalid or expired token" });
         }
-        req.user = decoded; // Isme user ka email encoded hota hai
+        req.user = decoded; // Contains encoded user email sequence mapping
         next();
     });
 }
@@ -38,15 +44,31 @@ app.post("/login", async (req, resp) => {
         if (!userData.email || !userData.password) {
             return resp.send({ success: false, msg: "Email and password are required" });
         }
+
         const db = await connection();
         const collection = db.collection("users");
-        const result = await collection.findOne({ email: userData.email, password: userData.password });
-        if (!result) {
+
+        // BUG 4 FIX (Part 1 - Login Verification): Find user record and securely verify hash
+        const user = await collection.findOne({ email: userData.email });
+        if (!user) {
             return resp.send({ success: false, msg: "Invalid email or password" });
         }
+
+        const isPasswordValid = await bcrypt.compare(userData.password, user.password);
+        if (!isPasswordValid) {
+            return resp.send({ success: false, msg: "Invalid email or password" });
+        }
+
         jwt.sign({ email: userData.email }, JWT_SECRET, { expiresIn: "5d" }, (error, token) => {
             if (error) return resp.send({ success: false, msg: "Token generation failed" });
-            resp.cookie("token", token, { httpOnly: true, maxAge: 5 * 24 * 60 * 60 * 1000 });
+            
+            // Production Cross-Origin Cookie Specs Configuration Matrix
+            resp.cookie("token", token, { 
+                httpOnly: true, 
+                secure: true, 
+                sameSite: 'none', 
+                maxAge: 5 * 24 * 60 * 60 * 1000 
+            });
             resp.send({ success: true, msg: "Login successful", token });
         });
     } catch (err) {
@@ -60,19 +82,32 @@ app.post("/signup", async (req, resp) => {
         if (!userData.email || !userData.password) {
             return resp.send({ success: false, msg: "Email and password are required" });
         }
+
         const db = await connection();
         const collection = db.collection("users");
+        
         const existing = await collection.findOne({ email: userData.email });
         if (existing) return resp.send({ success: false, msg: "Email already registered" });
         
-        const result = await collection.insertOne(userData);
+        // BUG 4 FIX (Part 2 - Secure Ingestion): Salt and hash plain text credentials before database storage
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
+        
+        const result = await collection.insertOne({ 
+            ...userData, 
+            password: hashedPassword 
+        });
+        
         if (!result.insertedId) return resp.send({ success: false, msg: "Signup failed" });
         
         jwt.sign({ email: userData.email }, JWT_SECRET, { expiresIn: "5d" }, (error, token) => {
             if (error) return resp.send({ success: false, msg: "Token generation failed" });
-           resp.cookie("token", token, {httpOnly: true,secure: true,  // Required for sameSite: 'none'
-           sameSite: 'none',       // Required for cross-origin requests
-           maxAge: 5 * 24 * 60 * 60 * 1000 });
+            
+            resp.cookie("token", token, {
+                httpOnly: true,
+                secure: true,   // Required for sameSite: 'none' in production layouts
+                sameSite: 'none', // Required for cross-origin tracking pipelines
+                maxAge: 5 * 24 * 60 * 60 * 1000 
+            });
             resp.send({ success: true, msg: "Signup successful", token });
         });
     } catch (err) {
@@ -80,9 +115,23 @@ app.post("/signup", async (req, resp) => {
     }
 });
 
+// ─── LOGOUT ROUTE (BUG 6 FIX) ───────────────────────────────────────────────
+app.post("/logout", (req, resp) => {
+    try {
+        // Cookie ko clear karne ke liye clearCookie use karein with identical configuration tags
+        resp.clearCookie("token", {
+            httpOnly: true,
+            secure: true,   // Cross-origin setups over HTTPS requires secure attribute
+            sameSite: 'none' // Mandatory cross-site tracking allowance configuration 
+        });
+        resp.send({ success: true, msg: "Logged out successfully" });
+    } catch (err) {
+        resp.send({ success: false, msg: "Logout error: " + err.message });
+    }
+});
+
 // ─── SECURE TASK ROUTES ──────────────────────────────────────────────────────
 
-// 1. Task Add karte waqt userEmail attach karna
 app.post("/add-task", verifyJWTToken, async (req, resp) => {
     try {
         const db = await connection();
@@ -90,7 +139,7 @@ app.post("/add-task", verifyJWTToken, async (req, resp) => {
         
         const taskData = {
             ...req.body,
-            userEmail: req.user.email, // Multi-User Isolation
+            userEmail: req.user.email, // Multi-User Isolation Guard
             status: req.body.status || "active"
         };
         
@@ -105,14 +154,12 @@ app.post("/add-task", verifyJWTToken, async (req, resp) => {
     }
 });
 
-// 2. Sirf logged-in user ke tasks fetch karna + Newest First Sorting
 app.get("/tasks", verifyJWTToken, async (req, resp) => {
     try {
         const db = await connection();
         const collection = db.collection(collectionName);
         
-        // Isolation: { userEmail: req.user.email } 
-        // Sorting: sort({ _id: -1 }) se naye tasks upar aate hain
+        // Isolation constraint enforcement sequence sorted descending
         const result = await collection
             .find({ userEmail: req.user.email })
             .sort({ _id: -1 })
@@ -124,7 +171,6 @@ app.get("/tasks", verifyJWTToken, async (req, resp) => {
     }
 });
 
-// 3. Single Task Fetch (Editing Ke Liye Data Populate Karne)
 app.get("/task/:id", verifyJWTToken, async (req, resp) => {
     try {
         const db = await connection();
@@ -132,7 +178,7 @@ app.get("/task/:id", verifyJWTToken, async (req, resp) => {
         
         const result = await collection.findOne({ 
             _id: new ObjectId(req.params.id), 
-            userEmail: req.user.email // Suraksha check
+            userEmail: req.user.email 
         });
         
         if (result) {
@@ -145,15 +191,12 @@ app.get("/task/:id", verifyJWTToken, async (req, resp) => {
     }
 });
 
-// 4. Secure Update Endpoint
-
 app.put("/update-task/:id", verifyJWTToken, async (req, resp) => {
     try {
         const db = await connection();
         const collection = db.collection(collectionName);
         const { _id, ...fields } = req.body;
         
-        // Use req.params.id from URL (more reliable than body _id)
         const taskId = req.params.id || _id;
 
         const result = await collection.updateOne(
@@ -170,7 +213,6 @@ app.put("/update-task/:id", verifyJWTToken, async (req, resp) => {
     }
 });
 
-// 5. Secure Delete Endpoint
 app.delete("/delete/:id", verifyJWTToken, async (req, resp) => {
     try {
         const db = await connection();
@@ -191,16 +233,18 @@ app.delete("/delete/:id", verifyJWTToken, async (req, resp) => {
     }
 });
 
-// 6. Secure Multiple Delete
 app.delete("/delete-multiple", verifyJWTToken, async (req, resp) => {
     try {
-        const db = await connection();
         const Ids = req.body;
+        
+        // BUG 7 FIX: Validate client parameters first before spinning up database connections
         if (!Array.isArray(Ids) || Ids.length === 0) {
             return resp.send({ success: false, message: "No IDs provided" });
         }
-        const deleteTaskIds = Ids.map((item) => new ObjectId(item));
+
+        const db = await connection();
         const collection = db.collection(collectionName);
+        const deleteTaskIds = Ids.map((item) => new ObjectId(item));
         
         const result = await collection.deleteMany({ 
             _id: { $in: deleteTaskIds }, 
@@ -213,7 +257,6 @@ app.delete("/delete-multiple", verifyJWTToken, async (req, resp) => {
 });
 
 const PORT = process.env.PORT || 3200;
-
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 export default function SignUp() {
   const [userData, setUserData] = useState({ name: '', email: '', password: '' });
+  const [loading, setLoading] = useState(false); // BUG 10 FIX: Staging loading channel state variable
   const navigate = useNavigate();
 
   // Redirect tracking triggers pipeline sequence configuration rules parameters
@@ -19,6 +20,8 @@ export default function SignUp() {
       alert('Please fill all the fields.');
       return;
     }
+
+    setLoading(true); // BUG 10 FIX: Intercept network initialization track to block redundant clicks
 
     try {
       let response = await fetch(`${import.meta.env.VITE_API_URL}/signup`, {
@@ -39,12 +42,14 @@ export default function SignUp() {
         navigate('/');
       } else {
         // Error payload display fallback details trace metrics validation output
-        alert('Signup Failed: ' + result.msg);
+        alert('Signup Failed: ' + (result.msg || result.message));
       }
     } catch (error) {
       console.error("Fetch Error: ", error);
       // Fallback alert setup triggers route network connections errors failure state flags trace rules options logs
-      alert('Backend server se connect nahi ho pa raha. Console check karo!');
+      alert('Cannot connect to server. Please check if the backend is running.');
+    } finally {
+      setLoading(false); // BUG 10 FIX: Clean up transaction cycle and unblock input controls safely
     }
   };
 
@@ -61,6 +66,7 @@ export default function SignUp() {
           type="text"
           name="name"
           placeholder="Enter your name"
+          disabled={loading} // Added clean UX constraint tracking to freeze forms during transmission
         />
 
         <label htmlFor="email">Email</label>
@@ -71,6 +77,7 @@ export default function SignUp() {
           type="email"
           name="email"
           placeholder="Enter your email"
+          disabled={loading}
         />
 
         <label htmlFor="password">Password</label>
@@ -81,10 +88,17 @@ export default function SignUp() {
           type="password"
           name="password"
           placeholder="Enter your password"
+          disabled={loading}
         />
 
-        <button onClick={handleSignUp} className="submit">
-          Sign Up
+        {/* BUG 10 FIX: Added programmatic disable handles matching layout design system tokens */}
+        <button 
+          onClick={handleSignUp} 
+          className="submit"
+          disabled={loading}
+          style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+        >
+          {loading ? 'Signing up...' : 'Sign Up'}
         </button>
 
         <span className="link">

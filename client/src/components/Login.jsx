@@ -47,7 +47,7 @@ export default function Login() {
                 setError(result.msg || 'Login failed. Check your email and password.');
             }
         } catch {
-            setError('Cannot connect to server. Is the backend running on port 3200?');
+            setError('Cannot connect to server. Please try again later.');
         } finally {
             setLoading(false);
         }
