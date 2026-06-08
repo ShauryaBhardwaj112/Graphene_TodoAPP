@@ -1,0 +1,12 @@
+[33m9158499[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m fix: add bcrypt dependency to package.json for secure hashing
+[33m83a9368[m fix: resolve production deployment bugs, security vulnerabilities, and logic flaws
+[33m4af31a7[m fix: mongo env var, cookie sameSite, update-task route param
+[33m9a9dc42[m fix: update signup and login api endpoints to use environment variables
+[33mcf34483[m fix: convert Hindi comments and alerts to English across all components
+[33m55c03f2[m fix: update signup and login api endpoints to use environment variables
+[33m5609434[m fix: resolve App.css casing issue for production build
+[33m9d98ace[m final: fixed environment variables and added task counter metrics
+[33ma159068[m fix: resolve production deployment blockers and secure database credentials
+[33m9d23272[m fix: add cookie-parser and verify all dependencies
+[33m41f1986[m fix: add jsonwebtoken dependency to package.json
+[33m40fd648[m Initial commit with client and server folders
