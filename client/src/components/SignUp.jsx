@@ -21,7 +21,7 @@ export default function SignUp() {
     }
 
     try {
-      let response = await fetch('${import.meta.env.VITE_API_URL}/signup', {
+      let response = await fetch(`${import.meta.env.VITE_API_URL}/signup`, {
         method: 'POST',
         body: JSON.stringify(userData),
         credentials: 'include',

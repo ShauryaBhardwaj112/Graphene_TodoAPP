@@ -25,7 +25,7 @@ export default function Login() {
         setLoading(true);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
+           const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
                 method: 'POST',
                 body: JSON.stringify(userData),
                 // Required for cross-origin cookie handling (httpOnly session token)
