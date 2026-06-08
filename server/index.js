@@ -70,7 +70,9 @@ app.post("/signup", async (req, resp) => {
         
         jwt.sign({ email: userData.email }, JWT_SECRET, { expiresIn: "5d" }, (error, token) => {
             if (error) return resp.send({ success: false, msg: "Token generation failed" });
-            resp.cookie("token", token, { httpOnly: true, maxAge: 5 * 24 * 60 * 60 * 1000 });
+           resp.cookie("token", token, {httpOnly: true,secure: true,  // Required for sameSite: 'none'
+           sameSite: 'none',       // Required for cross-origin requests
+           maxAge: 5 * 24 * 60 * 60 * 1000 });
             resp.send({ success: true, msg: "Signup successful", token });
         });
     } catch (err) {
@@ -144,17 +146,20 @@ app.get("/task/:id", verifyJWTToken, async (req, resp) => {
 });
 
 // 4. Secure Update Endpoint
-app.put("/update-task", verifyJWTToken, async (req, resp) => {
+
+app.put("/update-task/:id", verifyJWTToken, async (req, resp) => {
     try {
         const db = await connection();
         const collection = db.collection(collectionName);
         const { _id, ...fields } = req.body;
         
+        // Use req.params.id from URL (more reliable than body _id)
+        const taskId = req.params.id || _id;
+
         const result = await collection.updateOne(
-            { _id: new ObjectId(_id), userEmail: req.user.email },
+            { _id: new ObjectId(taskId), userEmail: req.user.email },
             { $set: fields }
         );
-        
         if (result.matchedCount > 0) {
             resp.send({ success: true, message: "Task updated", result });
         } else {
