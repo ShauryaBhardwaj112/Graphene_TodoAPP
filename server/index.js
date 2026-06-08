@@ -1,3 +1,4 @@
+import "dotenv/config"; // Yeh line sabse upar honi chahiye
 import e from "express";
 import { collectionName, connection } from "./dbconfig.js";
 import cors from "cors";
@@ -10,7 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "Google";
 
 app.use(e.json());
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true,
 }));
 app.use(cookieParser());
@@ -206,6 +207,8 @@ app.delete("/delete-multiple", verifyJWTToken, async (req, resp) => {
     }
 });
 
-app.listen(3200, () => {
-    console.log("Server running on http://localhost:3200");
+const PORT = process.env.PORT || 3200;
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
