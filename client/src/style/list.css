@@ -1,0 +1,235 @@
+/* Task List Management UI Styling
+   Bug logs:
+     - Fixed margin: 20 -> margin: 20px conversion error (unit missing tha previously).
+     - Fixed responsive breakdown for grid columns on lower screen resolutions.
+     - Realigned anchor based .update-item styling to handle full dimensions.
+*/
+
+.list-container {
+  max-width: 1100px;
+  margin: 2.5rem auto;
+  padding: 0 1.5rem;
+  animation: fadeUp 0.4s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.list-container h1 {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  color: var(--clr-brown-dark);
+  margin-bottom: 0.25rem;
+}
+
+/* Top functional action bar layout alignment rules */
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.delete-multiple {
+  padding: 0.5rem 1.25rem;
+  background-color: var(--clr-danger);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition), transform var(--transition);
+}
+
+.delete-multiple:hover {
+  background-color: #8e2f2f;
+  transform: translateY(-1px);
+}
+
+.delete-multiple:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Card framing layer protecting grid overruns */
+.table-wrapper {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow-x: auto; /* Choti screen pe elements layout break na kare isliye overflow enabled kiya */
+}
+
+/* Grid system matrix:
+   checkbox width | S.No width | Title (takes remaining fraction) | Description (takes double fraction) | Actions width
+*/
+.task-list {
+  display: grid;
+  grid-template-columns: 44px 56px 1fr 2fr 180px;
+  list-style: none;
+  padding: 0;
+  margin: 0; /* Bug Fix: was 'margin: 20' without unit specification */
+  min-width: 560px; 
+}
+
+.list-header {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--clr-text-secondary);
+  background-color: var(--clr-surface-alt);
+  padding: 0.75rem 0.875rem;
+  border-bottom: 1px solid var(--clr-border);
+}
+
+/* Rounding corners for container table headers explicitly */
+.list-header:first-child { border-radius: var(--radius-lg) 0 0 0; }
+.list-header:nth-child(5) { border-radius: 0 var(--radius-lg) 0 0; }
+
+.list-item {
+  font-size: 0.9rem;
+  color: var(--clr-text-primary);
+  padding: 0.875rem 0.875rem;
+  border-bottom: 1px solid var(--clr-border);
+  display: flex;
+  align-items: center;
+  background-color: var(--clr-surface);
+  transition: background-color var(--transition);
+  word-break: break-word; /* string break handling edge cases configuration */
+}
+
+/* Zebra striping calculation logic!
+   Har row me 5 cells (columns) hain, isliye sets of 5 elements par color cycle pass kiya hai.
+   Yeh setup thoda functional computational hai, changes careful hokar karna.
+*/
+.task-list li.list-item:nth-child(10n+6),
+.task-list li.list-item:nth-child(10n+7),
+.task-list li.list-item:nth-child(10n+8),
+.task-list li.list-item:nth-child(10n+9),
+.task-list li.list-item:nth-child(10n+10) {
+  background-color: #FDFAF5;
+}
+
+/* Akhiri row ke niche se border clear karne ka clean fallback */
+.task-list li.list-item:nth-last-child(-n+5) {
+  border-bottom: none;
+}
+
+.list-item input[type="checkbox"],
+.list-header input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--clr-brown-mid);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.list-item:last-child,
+.action-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.delete-item {
+  padding: 0.4rem 0.875rem;
+  background-color: var(--clr-danger-bg);
+  color: var(--clr-danger);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+}
+
+.delete-item:hover {
+  background-color: var(--clr-danger);
+  color: #fff;
+  border-color: var(--clr-danger);
+}
+
+/* Bug Fix Note: 
+   .update-item actually active routing <Link> wrapper context me anchor tag generate karta hai.
+   Isliye width configuration blocks resolve karne ke liye standard display setup block explicit flex override kiya.
+*/
+.update-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.875rem;
+  background-color: var(--clr-success-bg);
+  color: var(--clr-success);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+}
+
+.update-item:hover {
+  background-color: var(--clr-success);
+  color: #fff;
+  border-color: var(--clr-success);
+}
+
+/* Zero states layout view rules */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--clr-text-secondary);
+}
+
+.empty-state p {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state small {
+  font-size: 0.85rem;
+  color: var(--clr-text-placeholder);
+}
+
+/* Loading status animation placeholders (Skeleton view setup) */
+.skeleton {
+  background: linear-gradient(90deg, var(--clr-surface-alt) 25%, var(--clr-border) 50%, var(--clr-surface-alt) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius-sm);
+  height: 14px;
+  width: 80%;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Responsiveness overrides */
+@media (max-width: 700px) {
+  .task-list {
+    grid-template-columns: 36px 44px 1fr 160px;
+    min-width: 400px;
+  }
+
+  /* Screen space save karne ke liye mobile layout view formats me se description cells hata diye rules */
+  .list-header:nth-child(4),
+  .list-item:nth-child(4n) {
+    display: none;
+  }
+}
