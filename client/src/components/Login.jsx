@@ -26,7 +26,7 @@ export default function Login() {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3200/login', {
+            const response = await fetch('${import.meta.env.VITE_API_URL}/login', {
                 method: 'POST',
                 body: JSON.stringify(userData),
                 // Secure httpOnly session mapping configurations pass down logic setup rules
@@ -62,7 +62,7 @@ export default function Login() {
 
                 {error && <p className="form-error">{error}</p>}
 
-                <label htmlFor="email">Email</label>
+                <label htmlFor="email">Email ID </label>
                 <input
                     id="email"
                     type="email"

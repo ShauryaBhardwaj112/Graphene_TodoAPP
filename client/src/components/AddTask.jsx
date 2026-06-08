@@ -20,7 +20,7 @@ export default function AddTask() {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3200/add-task', {
+            const response = await fetch('${import.meta.env.VITE_API_URL}/add-task', {
                 method: 'POST',
                 body: JSON.stringify(taskData),
                 // Backend with credentials handle karne ke liye cookie cross-origin bhej rahe hain

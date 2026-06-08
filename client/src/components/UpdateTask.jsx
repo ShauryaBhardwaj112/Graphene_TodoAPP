@@ -15,7 +15,7 @@ export default function UpdateTask() {
     useEffect(() => {
         const fetchTaskDetails = async () => {
             try {
-                const response = await fetch(`http://localhost:3200/task/${id}`, {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/task/${id}`, {
                     credentials: 'include'
                 });
                 const result = await response.json();
@@ -50,7 +50,7 @@ export default function UpdateTask() {
 
         try {
             // Assessment rule requirement tracking check: PUT action invoked
-            const response = await fetch('http://localhost:3200/update-task', {
+            const response = await fetch('${import.meta.env.VITE_API_URL}/update-task', {
                 method: 'PUT',
                 body: JSON.stringify({ _id: id, ...taskData }),
                 credentials: 'include',

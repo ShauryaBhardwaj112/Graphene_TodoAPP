@@ -14,7 +14,8 @@ export default function List() {
 
         const fetchTasks = async () => {
             try {
-                const response = await fetch("http://localhost:3200/tasks", {
+                // FIXED: Changed double quotes to backticks to properly parse environmental variables
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/tasks`, {
                     credentials: "include",
                 });
                 const data = await response.json();
@@ -47,7 +48,7 @@ export default function List() {
     const toggleStatus = async (id, currentStatus) => {
         try {
             const nextStatus = currentStatus === "completed" ? "active" : "completed";
-            const response = await fetch(`http://localhost:3200/update-task`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/update-task`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ _id: id, status: nextStatus }),
@@ -65,7 +66,7 @@ export default function List() {
     const deleteTask = async (id) => {
         if (!window.confirm("Are you sure you want to delete this task?")) return;
         try {
-            const response = await fetch(`http://localhost:3200/delete/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/delete/${id}`, {
                 method: "DELETE",
                 credentials: "include"
             });
@@ -92,6 +93,10 @@ export default function List() {
         return item.title.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
+    // FIXED: Real-time calculation for active vs completed count dashboard badges
+    const activeCount = taskData.filter(t => t.status === "active").length;
+    const completedCount = taskData.filter(t => t.status === "completed").length;
+
     return (
         <div className="list-container">
             <div className="list-toolbar">
@@ -115,6 +120,11 @@ export default function List() {
                         color: 'var(--clr-text-primary)'
                     }}
                 />
+            </div>
+
+            {/* FIXED: Task Counter Badges aligned precisely with design system tokens */}
+            <div style={{ marginBottom: '1.25rem', fontSize: '0.95rem', color: 'var(--clr-text-secondary)' }}>
+                📊 <strong>Active Tasks:</strong> {activeCount} | <strong>Completed Tasks:</strong> {completedCount}
             </div>
 
             {/* Filter Tabs */}
