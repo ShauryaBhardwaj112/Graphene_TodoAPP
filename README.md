@@ -1,168 +1,317 @@
-# Graphene Personal Task Manager (Secure Full-Stack Monorepo)
+# Graphene Personal Task Manager
 
-An advanced, production-grade Task Manager platform built as part of the Studio Graphene Full-Stack Developer Assessment[cite: 3]. [cite_start]While the core project brief (Exercise 1) specified a single-user task tracker without authentication [cite: 68, 72][cite_start], this implementation steps up to an enterprise-grade stateless authentication architecture. It features **Multi-User Data Isolation**, **Bcrypt password hashing**, and secure cross-origin **HTTPOnly session cookies** to deliver an authentic, secure real-world application experience.
+> **Studio Graphene Full-Stack Developer Assessment — Exercise 1: Personal Task Manager**
 
-### 🔗 Production Live Links
-- **Production Frontend UI (Vercel):** https://taskmanager-liart-sigma.vercel.app
-- **Production Backend API (Render):** https://task-manager-wjgy.onrender.com
+A production-grade, full-stack Task Manager application built as part of the Studio Graphene Node.js + React assessment. While Exercise 1 specified a single-user task tracker without authentication, this implementation extends the brief with a complete **multi-user authentication system** — featuring JWT-based stateless sessions, Bcrypt password hashing, and secure HTTPOnly cross-origin cookies — to demonstrate real-world, production-ready engineering practices.
 
 ---
 
-## 🎥 Video Walkthroughs & Live Demos
+## 🔗 Live Demo
 
-To provide the review committee with immediate visibility into the system's engineering design and runtime behaviors, the following video presentations are available:
+| Layer | URL |
+|-------|-----|
+| **Frontend (Vercel)** | https://app1-neon-tau.vercel.app/ |
+| **Backend API (Render)** | https://shauryas-taskmanager.onrender.com |
+| **Video Walkthrough** | https://drive.google.com/drive/folders/11sVzi1BA-JhB-Ru2QoNyc0SJNlDr-Owt?usp=drive_link |
 
-* 🎬 **Full Product Walkthrough & UI Feature Demo:** [URL
-    *Covers: User onboarding flow, loading states, multi-user isolation verify, date processing, status toggles, responsive views on mobile breakpoints.*
-* ⚙️ **Backend Architecture & Security Handshake Review:** [URl]
-    * *Covers: Cryptographic password verification logic, CORS dynamic pre-flights, lazy-loaded connection pool lifecycle, and stateless HTTPOnly cookie validation matrix.*
+> **Note:** The backend is hosted on Render's free tier. If the first request takes 30–50 seconds to respond, the server is waking from sleep — this is expected behaviour on free-tier hosting and is not a bug.
 
 ---
 
-## 🛠️ Production Tech Stack & Architectural Decisions
+## 🎥 Video Walkthroughs
 
-### Frontend (`/client`)
-- **React (Vite):** Selected over heavy traditional setups for near-instantaneous Hot Module Replacement (HMR) and optimized client compile targets[cite: 25].
-- **React Router DOM:** Controls client-side view management paired with high-performance routing blocks (`Protected.jsx`) to guard internal view frames against unauthorized traffic injections.
-- [cite_start]**Vanilla CSS with Custom Design Tokens:** Configured clean systemic layouts and adaptive design tokens (e.g., `--clr-surface`, `--clr-danger`) ensuring fluid device responsiveness across all screen breakpoints[cite: 28, 147].
+The following video recordings are available in the linked Google Drive folder:
 
-### Backend (`/server`)
-- **Node.js & Express:** Configured asynchronous callback handling architectures to build clean, predictable, and highly scalable REST API routing tables[cite: 24, 59].
-- **MongoDB & Native Driver:** Bypassed bulky Object Data Modeling (ODM) abstraction layers to utilize asynchronous connection pool managers directly, speeding up transactions.
-- **JSON Web Tokens (JWT) & Cookie Parser:** Configured stateless session verification mechanisms where validation tokens travel strictly inside HTTPOnly headers, protecting client states from malicious client-side script manipulations (XSS protection).
-- **Bcrypt:** Enforced server-side 10-rounds cryptographic salting algorithms ensuring plain-text user passwords are secure before reaching cloud-layer registers.
+- **Full Product Walkthrough & UI Feature Demo** — Covers user onboarding, task creation, status toggling, overdue task highlighting, filter/search functionality, and mobile responsiveness.
+- **Backend Architecture & Security Review** — Covers JWT validation flow, Bcrypt password hashing, CORS preflight configuration, lazy-loaded MongoDB connection pool lifecycle, and HTTPOnly cookie handshake.
+
+📁 [Access Video Folder](https://drive.google.com/drive/folders/11sVzi1BA-JhB-Ru2QoNyc0SJNlDr-Owt?usp=drive_link)
+
+---
+
+## ✅ Feature Coverage
+
+### Must Have (All Completed)
+- [x] Add a new task with title (required), optional description, and due date
+- [x] View all tasks sorted by creation date (newest first)
+- [x] Mark a task as complete or incomplete (toggle via checkbox)
+- [x] Edit a task's title, description, or due date
+- [x] Delete a task with a confirmation prompt
+- [x] Filter tasks by status: All / Active / Completed
+
+### Should Have (All Completed)
+- [x] Active vs Completed task count displayed on screen
+- [x] Overdue tasks visually distinguished (red text + "OVERDUE" label)
+- [x] Empty state UI when no tasks match
+
+### Bonus / Nice to Have (Completed)
+- [x] Search tasks by title (live filter)
+- [x] Multi-user data isolation (each user sees only their own tasks)
+- [x] Persistent storage via MongoDB Atlas (tasks survive server restarts)
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology | Reason |
+|-------|-----------|--------|
+| **Frontend** | React 18 + Vite | Fast HMR, optimised production builds, minimal config |
+| **Routing** | React Router DOM v6 | Declarative client-side routing with protected route guards |
+| **Styling** | Vanilla CSS + Design Tokens | Custom `--clr-*` variables for consistent theming without dependencies |
+| **Backend** | Node.js + Express | Lightweight, async-first REST API framework |
+| **Database** | MongoDB Atlas + Native Driver | Skipped Mongoose ODM intentionally to work directly with the driver for faster, leaner queries |
+| **Auth** | JWT + Cookie Parser | Stateless session tokens stored in HTTPOnly cookies — immune to XSS attacks |
+| **Password Security** | Bcrypt (10 rounds) | Industry-standard cryptographic password hashing |
+| **Deployment** | Vercel (frontend) + Render (backend) | Both offer free-tier CI/CD with GitHub integration |
 
 ---
 
 ## 📂 Project Structure
 
-```text
+```
 Graphene_TodoAPP/
-├── client/                 # React Frontend Application (Vite Build Asset Scope)
-│   ├── public/             # Static SVGs, favicon models, and web application assets
+├── client/                        # React + Vite Frontend
+│   ├── public/                    # Static assets (favicon, SVGs)
 │   ├── src/
-│   │   ├── components/     # UI Views (List.jsx, AddTask.jsx, Login.jsx, SignUp.jsx, Protected.jsx)
-│   │   ├── style/          # Dedicated responsive design styling layouts (navbar.css, list.css, etc.)
-│   │   ├── App.jsx         # Application base route mapper matrix
-│   │   └── main.jsx        # Frontend runtime mount initialization vector
-│   ├── vite.config.js      # Build bundler configuration parameters
-│   └── package.json        # Client configuration and runtime scripts
+│   │   ├── components/
+│   │   │   ├── AddTask.jsx        # Task creation form
+│   │   │   ├── List.jsx           # Task list with filter, search, toggle, delete
+│   │   │   ├── UpdateTask.jsx     # Task edit form
+│   │   │   ├── Login.jsx          # Login form
+│   │   │   ├── SignUp.jsx         # Registration form
+│   │   │   ├── NavBar.jsx         # Top navigation with auth-aware links
+│   │   │   └── Protected.jsx      # Route guard — redirects unauthenticated users
+│   │   ├── style/                 # Component-scoped CSS files
+│   │   ├── App.jsx                # Route definitions
+│   │   └── main.jsx               # React root mount
+│   ├── .env.production            # Production API URL (Render)
+│   ├── vite.config.js
+│   └── package.json
 │
-└── server/                 # Node.js REST API Server Application Scope
-    ├── dbconfig.js         # Lazy-loaded MongoDB Atlas client initialization pooling
-    ├── index.js            # Main Express server pipeline middleware structure
-    └── package.json        # Server configurations and absolute operational scripts
+├── server/                        # Node.js + Express Backend
+│   ├── index.js                   # Express app — all routes and middleware
+│   ├── dbconfig.js                # Lazy-loaded MongoDB Atlas connection pool
+│   ├── .env                       # Environment secrets (not committed)
+│   └── package.json
+│
+├── vercel.json                    # Vercel build config (forces client/ context)
+└── README.md
+```
 
-Server Environment Settings (server/.env)Code snippetPORT=3200
-MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/todo-app-db?retryWrites=true&w=majority
-JWT_SECRET=your_ultra_secure_long_random_string_vector
-FRONTEND_URL=[https://taskmanager-liart-sigma.vercel.app](https://taskmanager-liart-sigma.vercel.app)
-Client Environment Settings (client/.env)Code snippetVITE_API_URL=[https://task-manager-wjgy.onrender.com](https://task-manager-wjgy.onrender.com)
-💻 How to Run LocallyFollow these precise commands to instantiate a fully local execution loop. Ensure you have Node.js (v18+) installed globally on your workstation.  1. Clone the MonorepoBashgit clone [https://github.com/ShauryaBhardwaj112/Graphene_TodoAPP.git](https://github.com/ShauryaBhardwaj112/Graphene_TodoAPP.git)
+---
+
+## 💻 How to Run Locally
+
+**Prerequisites:** Node.js v18 or higher, a MongoDB Atlas account (free tier works).
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/ShauryaBhardwaj112/Graphene_TodoAPP.git
 cd Graphene_TodoAPP
-2. Configure and Boot the Backend ServerBashcd server
+```
+
+### 2. Set up and start the Backend
+
+```bash
+cd server
 npm install
-# Create your local .env file using the schema outlined above
+```
+
+Create a `.env` file inside `server/`:
+
+```env
+PORT=3200
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/todo-app-db?retryWrites=true&w=majority
+JWT_SECRET=your_ultra_secure_random_string_here
+FRONTEND_URL=http://localhost:5173
+```
+
+Start the server:
+
+```bash
 npm start
-The API server will initialize dynamically on port 3200.3. Configure and Boot the Frontend ClientOpen a secondary terminal window from the root repository layout directory:Bashcd client
+```
+
+The API will be live at `http://localhost:3200`.
+
+### 3. Set up and start the Frontend
+
+Open a new terminal from the repo root:
+
+```bash
+cd client
 npm install
-# Create your local .env file pointing VITE_API_URL to http://localhost:3200
+```
+
+Create a `.env` file inside `client/`:
+
+```env
+VITE_API_URL=http://localhost:3200
+```
+
+Start the dev server:
+
+```bash
 npm run dev
-Vite will broadcast the functional application layout at http://localhost:5173.📡 REST API DocumentationAll resource endpoints (except Authentication) are protected via custom JWT state middleware and require credentials: 'include' on the frontend to process HTTPOnly cross-origin session cookies successfully.🔑 Authentication Endpoints1. User Registration (Sign Up)Endpoint: /signupMethod: POSTHeaders: Content-Type: application/jsonRequest Body:JSON{
+```
+
+The app will be live at `http://localhost:5173`.
+
+---
+
+## 📡 API Documentation
+
+All task endpoints require authentication. Send requests with `credentials: 'include'` to pass the HTTPOnly session cookie.
+
+### Authentication Endpoints
+
+#### `POST /signup` — Register a new user
+
+**Request Body:**
+```json
+{
   "name": "Shaurya Bhardwaj",
   "email": "shaurya@example.com",
   "password": "securePassword123"
 }
-Success Response (200 OK):JSON{
-  "success": true,
-  "msg": "Signup successful",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-2. User Authentication (Login)Endpoint: /loginMethod: POSTHeaders: Content-Type: application/jsonRequest Body:JSON{
+```
+
+**Success Response `200`:**
+```json
+{ "success": true, "msg": "Signup successful" }
+```
+
+---
+
+#### `POST /login` — Authenticate user
+
+**Request Body:**
+```json
+{
   "email": "shaurya@example.com",
   "password": "securePassword123"
 }
-Success Response (200 OK):JSON{
+```
+
+**Success Response `200`:** Sets an HTTPOnly `token` cookie automatically.
+```json
+{ "success": true, "msg": "Login successful" }
+```
+
+---
+
+#### `POST /logout` — Terminate session
+
+**Success Response `200`:**
+```json
+{ "success": true, "msg": "Logged out successfully" }
+```
+
+---
+
+### Task Endpoints (All Protected)
+
+#### `GET /tasks` — Fetch all tasks for the logged-in user
+
+**Success Response `200`:**
+```json
+{
   "success": true,
-  "msg": "Login successful",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-Note: Automatically injects a secured token cookie into the browser environment container via cross-origin protocol standards.3. Terminate Session (Logout)Endpoint: /logoutMethod: POSTSuccess Response (200 OK):JSON{
-  "success": true,
-  "msg": "Logged out successfully"
-}
-📝 Task Management Endpoints (Protected Routes)1. Create a New TaskEndpoint: /add-taskMethod: POSTHeaders: Content-Type: application/jsonRequest Body:JSON{
-  "title": "Complete Studio Graphene Assignment",
-  "description": "Refactor codebase, optimize production dependencies, and push to main.",
-  "dueDate": "2026-06-10",
-  "status": "active"
-}
-Success Response (200 OK):JSON{
-  "success": true,
-  "message": "New task added",
-  "result": {
-    "acknowledged": true,
-    "insertedId": "6481f0b2f0a1c23456789abc"
-  }
-}
-2. Fetch All Tasks (Multi-User Isolated List)Endpoint: /tasksMethod: GETSuccess Response (200 OK - Sorted Newest First):JSON{
-  "success": true,
-  "message": "Task list fetched",
   "result": [
     {
       "_id": "6481f0b2f0a1c23456789abc",
       "title": "Complete Studio Graphene Assignment",
-      "description": "Refactor codebase, optimize production dependencies, and push to main.",
+      "description": "Finalise and push to main.",
       "dueDate": "2026-06-10T00:00:00.000Z",
       "status": "active",
       "userEmail": "shaurya@example.com"
     }
   ]
 }
-3. Fetch Single Task ParametersEndpoint: /task/:idMethod: GETSuccess Response (200 OK):JSON{
+```
+
+---
+
+#### `GET /task/:id` — Fetch a single task by ID
+
+**Success Response `200`:**
+```json
+{
   "success": true,
-  "message": "Task fetched",
-  "result": {
-    "_id": "6481f0b2f0a1c23456789abc",
-    "title": "Complete Studio Graphene Assignment",
-    "description": "Refactor codebase, optimize production dependencies, and push to main.",
-    "dueDate": "2026-06-10T00:00:00.000Z",
-    "status": "active",
-    "userEmail": "shaurya@example.com"
-  }
+  "result": { "_id": "...", "title": "...", "description": "...", "dueDate": "...", "status": "active" }
 }
-4. Programmatic Task Modification (Update)Endpoint: /update-task/:idMethod: PUTHeaders: Content-Type: application/jsonRequest Body:JSON{
-  "status": "completed"
+```
+
+---
+
+#### `POST /add-task` — Create a new task
+
+**Request Body:**
+```json
+{
+  "title": "Complete Studio Graphene Assignment",
+  "description": "Optional description",
+  "dueDate": "2026-06-10",
+  "status": "active"
 }
-Success Response (200 OK):JSON{
-  "success": true,
-  "message": "Task updated",
-  "result": {
-    "acknowledged": true,
-    "modifiedCount": 1,
-    "upsertedId": null,
-    "upsertedCount": 0,
-    "matchedCount": 1
-  }
-}
-5. Delete Single Task InstanceEndpoint: /delete/:idMethod: DELETESuccess Response (200 OK):JSON{
-  "success": true,
-  "message": "Task deleted",
-  "result": {
-    "acknowledged": true,
-    "deletedCount": 1
-  }
-}
-6. Delete Multiple Task Index Elements (Bulk Clear)Endpoint: /delete-multipleMethod: DELETEHeaders: Content-Type: application/jsonRequest Body:JSON[
-  "6481f0b2f0a1c23456789abc",
-  "6481f126f0a1c23456789def"
-]
-Success Response (200 OK):JSON{
-  "success": true,
-  "message": "Tasks deleted",
-  "result": {
-    "acknowledged": true,
-    "deletedCount": 2
-  }
-}
-📈 Next Steps & Engineering ImprovementsGiven extended timelines, the application execution loop would integrate the following optimizations:Automated Testing Suite: Deployment of comprehensive Unit and Integration validation routines using Vitest and Supertest to verify backend route security structures under mock environments.  Cache Layer Integration: Implementation of an ephemeral data tier (Redis) to cache active user task collections, significantly decreasing database query overhead.Drag-and-Drop Task Reordering: Integration of fluid tracking components (such as @hello-pangea/dnd) to support intuitive user adjustments. 
+```
+
+**Success Response `200`:**
+```json
+{ "success": true, "message": "New task added" }
+```
+
+---
+
+#### `PUT /update-task/:id` — Update a task
+
+**Request Body** (send only fields to update):
+```json
+{ "status": "completed" }
+```
+
+**Success Response `200`:**
+```json
+{ "success": true, "message": "Task updated" }
+```
+
+---
+
+#### `DELETE /delete/:id` — Delete a single task
+
+**Success Response `200`:**
+```json
+{ "success": true, "message": "Task deleted" }
+```
+
+---
+
+## 🔐 Security Architecture
+
+- **HTTPOnly Cookies:** JWT tokens are stored in HTTPOnly cookies — they cannot be read by JavaScript, eliminating XSS token theft.
+- **SameSite: None + Secure:** Required for cross-origin cookie transmission between Vercel (frontend) and Render (backend).
+- **Multi-User Isolation:** Every task query filters by `req.user.email` decoded from the JWT — users can never access each other's tasks.
+- **Bcrypt (10 rounds):** Passwords are hashed before storage. Plain-text passwords never reach the database.
+
+---
+
+## 📈 What I Would Build Next
+
+Given more time, the following improvements would be prioritised:
+
+- **Automated Tests:** Backend route security tests using Vitest + Supertest (e.g., verify that a user cannot access another user's tasks even with a valid token).
+- **Redis Cache Layer:** Cache active task lists per user to reduce MongoDB query load.
+- **Drag-and-Drop Reordering:** Implement `@hello-pangea/dnd` for intuitive task priority management.
+- **Password Reset Flow:** Email-based reset using Nodemailer.
+- **Pagination:** For users with large task lists, add cursor-based pagination to the `/tasks` endpoint.
+
+---
+
+## 🤖 AI Usage Disclosure
+
+AI tools (Claude) were used during development for debugging deployment configuration issues (Vercel build pipeline) and for structuring this README. All application code — components, API routes, authentication logic, database queries — was written and is fully understood by me. I can walk through every line in a technical discussion.
+
+---
+
+*Built by Shaurya Bhardwaj for the Studio Graphene Full-Stack Developer Assessment.*
