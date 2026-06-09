@@ -5,23 +5,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 export default function UpdateTask() {
     const [taskData, setTaskData] = useState({ title: '', description: '', dueDate: '' });
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(true); // Active until existing task data is fetched
+    const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
     const navigate = useNavigate();
-    const { id } = useParams(); // Extract task ID from URL params
+    const { id } = useParams();
 
     // Fetch existing task data when component mounts
-   // Fetch existing task data when component mounts
     useEffect(() => {
         const fetchTaskDetails = async () => {
-            // PROFESSIONAL DEBUGGER FIX: Dynamic fallback resolution matrix
-            const BACKEND_BASE_URL = window.location.hostname === 'localhost' 
-              ? (import.meta.env.VITE_API_URL || 'http://localhost:3200')
-              : 'https://task-manager-wjgy.onrender.com';
-
             try {
-                const response = await fetch(`${BACKEND_BASE_URL}/task/${id}`, {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/task/${id}`, {
                     credentials: 'include'
                 });
                 const result = await response.json();
@@ -30,7 +24,6 @@ export default function UpdateTask() {
                     setTaskData({
                         title: result.result.title || '',
                         description: result.result.description || '',
-                        // Convert ISO date string to yyyy-mm-dd for the date input field
                         dueDate: result.result.dueDate ? result.result.dueDate.split('T')[0] : ''
                     });
                 } else {
@@ -47,7 +40,6 @@ export default function UpdateTask() {
     }, [id]);
 
     // Update task submit handler
-    // Update task submit handler
     const handleUpdateTaskSubmit = async () => {
         if (!taskData.title?.trim()) {
             setError('Task title cannot be empty.');
@@ -56,13 +48,8 @@ export default function UpdateTask() {
         setError('');
         setSubmitting(true);
 
-        // PROFESSIONAL DEBUGGER FIX: Dynamic fallback resolution matrix
-        const BACKEND_BASE_URL = window.location.hostname === 'localhost' 
-          ? (import.meta.env.VITE_API_URL || 'http://localhost:3200')
-          : 'https://task-manager-wjgy.onrender.com';
-
         try {
-            const response = await fetch(`${BACKEND_BASE_URL}/update-task/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/update-task/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify({ _id: id, ...taskData }),
                 credentials: 'include',
@@ -74,7 +61,7 @@ export default function UpdateTask() {
             const result = await response.json();
 
             if (result.success) {
-                navigate('/'); // Redirect to task list after successful update
+                navigate('/');
             } else {
                 setError(result.message || 'Something went wrong. Please try again.');
             }
@@ -128,7 +115,6 @@ export default function UpdateTask() {
                     type="date"
                     name="dueDate"
                     value={taskData.dueDate}
-                    // BUG 8 FIXED: Removed the hard 'min' validation constraint to enable smooth execution of historical edits
                     onChange={(e) => setTaskData({ ...taskData, dueDate: e.target.value })}
                 />
 

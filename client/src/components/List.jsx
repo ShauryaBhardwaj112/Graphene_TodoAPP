@@ -13,13 +13,8 @@ export default function List() {
         let isMounted = true;
 
         const fetchTasks = async () => {
-            // PROFESSIONAL DEBUGGER FIX: Dynamic fallback resolution matrix
-            const BACKEND_BASE_URL = window.location.hostname === 'localhost' 
-              ? (import.meta.env.VITE_API_URL || 'http://localhost:3200')
-              : 'https://task-manager-wjgy.onrender.com';
-
             try {
-                const response = await fetch(`${BACKEND_BASE_URL}/tasks`, {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/tasks`, {
                     credentials: "include",
                 });
                 const data = await response.json();
@@ -50,14 +45,9 @@ export default function List() {
     }, []);
 
     const toggleStatus = async (id, currentStatus) => {
-        // PROFESSIONAL DEBUGGER FIX: Dynamic fallback resolution matrix
-        const BACKEND_BASE_URL = window.location.hostname === 'localhost' 
-          ? (import.meta.env.VITE_API_URL || 'http://localhost:3200')
-          : 'https://task-manager-wjgy.onrender.com';
-
         try {
             const nextStatus = currentStatus === "completed" ? "active" : "completed";
-            const response = await fetch(`${BACKEND_BASE_URL}/update-task/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/update-task/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ _id: id, status: nextStatus }),
@@ -103,7 +93,6 @@ export default function List() {
     const activeCount = taskData.filter(t => t.status === "active").length;
     const completedCount = taskData.filter(t => t.status === "completed").length;
 
-    // OPTIMIZATION: Define today's midnight point here ONCE before iteration to prevent memory garbage collection overhead
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
@@ -151,7 +140,6 @@ export default function List() {
                 <div className="table-responsive">
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {filteredTasks.map((item) => {
-                            // Clean check against pre-calculated start of day matrix
                             const isOverdue = item.dueDate && new Date(item.dueDate) < todayStart && item.status !== 'completed';
                             const rowBg = item.status === 'completed' ? '#fcfbf8' : 'var(--clr-surface)';
 

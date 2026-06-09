@@ -10,7 +10,6 @@ export default function AddTask() {
     const navigate = useNavigate();
 
     // Form submit handler
-    // Form submit handler
     const handleAddTask = async () => {
         // Validation: filter out empty title
         if (!taskData.title?.trim()) {
@@ -20,13 +19,8 @@ export default function AddTask() {
         setError('');
         setLoading(true);
 
-        // PROFESSIONAL DEBUGGER FIX: Dynamic fallback resolution matrix
-        const BACKEND_BASE_URL = window.location.hostname === 'localhost' 
-          ? (import.meta.env.VITE_API_URL || 'http://localhost:3200')
-          : 'https://task-manager-wjgy.onrender.com';
-
         try {
-            const response = await fetch(`${BACKEND_BASE_URL}/add-task`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/add-task`, {
                 method: 'POST',
                 body: JSON.stringify(taskData),
                 // Sending cookie cross-origin for backend credentials handling
